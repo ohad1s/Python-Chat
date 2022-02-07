@@ -1,13 +1,23 @@
+import os
 import socket
 import threading
 import tkinter
 import tkinter.scrolledtext
 from tkinter import simpledialog
 from tkinter import *
+from venv import *
+import tqdm
 from tkinter.filedialog import askopenfilename
 # import tqdm
 # SEPARATOR = "<SEPARATOR>"
 # BUFFER_SIZE = 4096 # send 4096 bytes each time step
+host = '127.0.0.1'
+port_tcp = 55000
+port_udp = 44000
+
+BUFFER_SIZE = 4096
+SEPARATOR = "<SEPARATOR>"
+
 
 class Client:
 
@@ -17,7 +27,7 @@ class Client:
         this method is the constructor of the client chat
         """
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect(('127.0.0.1', 55000))
+        self.sock.connect((host,port_tcp))
 
         msg = tkinter.Tk()
         msg.withdraw()
@@ -116,6 +126,40 @@ class Client:
                 elif message.startswith("accounts"):
                     self.users = message.split("|")
                     self.users.remove("accounts")
+                elif message == 'con_udp':
+                    self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                    self.udp_sock.sendto("ack".encode("utf-8"),(host, port_udp))
+                    msg_ack,serv_addr= self.udp_sock.recvfrom(1024)
+                    if msg_ack == "ack":
+                        self.udp_sock.sendto("ACK".encode("utf-8"),(host, port_udp))
+                        # receive the file infos
+                        # receive using client socket, not server socket
+                        received = self.udp_sock.recv(BUFFER_SIZE).decode()
+                        filename, filesize = received.split(SEPARATOR)
+                        # remove absolute path if there is
+                        filename = os.path.basename(filename)
+                        # convert to integer
+                        filesize = int(filesize)
+
+                        # start receiving the file from the socket
+                        # and writing to the file stream
+                        progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True,
+                                             unit_divisor=1024)
+                        with open(filename, "wb") as f:
+                            while True:
+                                # read 1024 bytes from the socket (receive)
+                                bytes_read = self.udp_sock.recv(BUFFER_SIZE)
+                                if not bytes_read:
+                                    # nothing is received
+                                    # file transmitting is done
+                                    break
+                                # write to the file the bytes we just received
+                                f.write(bytes_read)
+                                # update the progress bar
+                                progress.update(len(bytes_read))
+
+                        # close the client socket
+                        self.udp_sock.close()
 
                 else:
                     if (self.gui_play):
