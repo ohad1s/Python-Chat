@@ -182,12 +182,15 @@ class Client:
                 while True:
                     # read 1024 bytes from the socket (receive)
                     bytes_read = self.udp_sock.recv(BUFFER_SIZE)
+                    print("still...")
                     if not bytes_read:
                         # nothing is received
                         # file transmitting is done
+                        print("finished!")
                         break
                     # write to the file the bytes we just received
                     f.write(bytes_read)
+                    print("writing...!")
                     # update the progress bar
                     progress.update(len(bytes_read))
 

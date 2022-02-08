@@ -132,6 +132,7 @@ def download_file(path,msg_arr):
         if msg.decode("utf-8")=="ACK":
             print(msg)
             filesize = os.path.getsize(path)
+            server_2.sendto(f"{path}{SEPARATOR}{filesize}".encode(),client_addr)
             progress = tqdm.tqdm(range(filesize), f"Sending {path}", unit="B", unit_scale=True, unit_divisor=1024)
             print("im here2")
             with open(path, "rb") as f:
