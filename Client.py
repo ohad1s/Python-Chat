@@ -127,40 +127,9 @@ class Client:
                     self.users = message.split("|")
                     self.users.remove("accounts")
                 elif message == 'con_udp':
-                    self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    self.udp_sock.sendto("ack".encode("utf-8"),(host, port_udp))
-                    msg_ack,serv_addr= self.udp_sock.recvfrom(1024)
-                    if msg_ack == "ack":
-                        self.udp_sock.sendto("ACK".encode("utf-8"),(host, port_udp))
-                        # receive the file infos
-                        # receive using client socket, not server socket
-                        received = self.udp_sock.recv(BUFFER_SIZE).decode()
-                        filename, filesize = received.split(SEPARATOR)
-                        # remove absolute path if there is
-                        filename = os.path.basename(filename)
-                        # convert to integer
-                        filesize = int(filesize)
-
-                        # start receiving the file from the socket
-                        # and writing to the file stream
-                        progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True,
-                                             unit_divisor=1024)
-                        with open(filename, "wb") as f:
-                            while True:
-                                # read 1024 bytes from the socket (receive)
-                                bytes_read = self.udp_sock.recv(BUFFER_SIZE)
-                                if not bytes_read:
-                                    # nothing is received
-                                    # file transmitting is done
-                                    break
-                                # write to the file the bytes we just received
-                                f.write(bytes_read)
-                                # update the progress bar
-                                progress.update(len(bytes_read))
-
-                        # close the client socket
-                        self.udp_sock.close()
-
+                    print(message)
+                    thread_dowmload = threading.Thread(target=self.open_udp_sock)
+                    thread_dowmload.start()
                 else:
                     if (self.gui_play):
                         self.txt_area.config(state='normal')
@@ -180,13 +149,49 @@ class Client:
         self.sock.send(message.encode('utf-8'))
         self.msg_box.delete('1.0','end')
 
-    # def choose_file(self):
-    #     """
-    #
-    #     """
-    #     filename = askopenfilename()
-    #     self.sock.send(filename.encode('utf-8'))
-    #     self.msg_box.delete('1.0', 'end')
+    def open_udp_sock(self):
+        """
+
+        """
+        print("open sock udp")
+        self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.send("con".encode("utf-8"))
+
+    def download_file(self):
+        self.udp_sock.sendto("ack".encode("utf-8"), (host, port_udp))
+        msg_ack, serv_addr = self.udp_sock.recvfrom(1024)
+        print(msg_ack)
+        if msg_ack == "ack":
+            print(msg_ack)
+            self.udp_sock.sendto("ACK".encode("utf-8"), (host, port_udp))
+            # receive the file infos
+            # receive using client socket, not server socket
+            received = self.udp_sock.recv(BUFFER_SIZE).decode()
+            filename, filesize = received.split(SEPARATOR)
+            # remove absolute path if there is
+            filename = os.path.basename(filename)
+            # convert to integer
+            filesize = int(filesize)
+
+            # start receiving the file from the socket
+            # and writing to the file stream
+            progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True,
+                                 unit_divisor=1024)
+            with open(filename, "wb") as f:
+                while True:
+                    # read 1024 bytes from the socket (receive)
+                    bytes_read = self.udp_sock.recv(BUFFER_SIZE)
+                    if not bytes_read:
+                        # nothing is received
+                        # file transmitting is done
+                        break
+                    # write to the file the bytes we just received
+                    f.write(bytes_read)
+                    # update the progress bar
+                    progress.update(len(bytes_read))
+
+            # close the client socket
+            self.udp_sock.close()
 
 
 client=Client()

@@ -4,6 +4,8 @@ import threading
 import tkinter
 from tkinter import *
 import tqdm
+global is_open
+is_open=False
 
 
 SEPARATOR = "<SEPARATOR>"
@@ -13,7 +15,7 @@ nicknames_list=[]
 clients_list=[]
 files_list=["files/air.jpeg","files/cii.txt","files/DO.txt"]
 files_names=["air","Cii","names"]
-data_names="files: ," + ",".join(files_names)
+data_names="files: " + ",".join(files_names)
 
 
 host = '127.0.0.1'
@@ -84,16 +86,16 @@ def send(client):
                 else:
                     send_msg(message.encode("utf-8"))
             elif msg_arr[1]=="files\n":
-                send_msg_to_someone(data_names+"\n".encode("utf-8"),msg_arr[0][:-1])
+                send_msg_to_someone((data_names+"\n").encode("utf-8"),msg_arr[0][:-1])
             elif msg_arr[1]=="download":
-                if msg_arr[2] in data_names:
-                    file_index= files_names.index(msg_arr[2])
+                if msg_arr[2][:-1] in files_names:
+                    file_index = files_names.index(msg_arr[2][:-1])
                     path_to_send=files_list[file_index]
-                    thread_udp = threading.Thread(target=open_udp_sock, args=path_to_send)
+                    thread_udp = threading.Thread(target=open_udp_sock, args=(path_to_send,is_open,msg_arr))
                     thread_udp.start()
-                    send_msg_to_someone("con_udp".encode("utf-8"),msg_arr[0][:-1])
                 else:
-                    send_msg_to_someone("file not found!".encode("utf-8"),msg_arr[0][:-1])
+                    send_msg_to_someone("file not found!\n".encode("utf-8"),msg_arr[0][:-1])
+            elif msg_arr[1] == "con":
 
             else:
                 send_msg(message.encode("utf-8"))
@@ -106,19 +108,23 @@ def send(client):
             nicknames_list.remove(nickname)
             break
 
-def open_udp_sock(path):
+def open_udp_sock(path,is_open,msg_arr):
     """
 
     """
-    flag=True
-    server_2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # IPV4 -UDP
-    server_2.bind((host, port_udp))
+    flag = True
+    if is_open == False:
+        server_2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # IPV4 -UDP
+        is_open = True
+        server_2.bind((host, port_udp))
+    send_msg_to_someone("con_udp".encode("utf-8"), msg_arr[0][:-1])
     while flag:
         msg, client_addr= server_2.recvfrom(1024)
         if msg=="ack":
+            print(msg)
             server_2.sendto(msg,client_addr)
         if msg=="ACK":
-
+            print(msg)
             filesize = os.path.getsize(path)
             progress = tqdm.tqdm(range(filesize), f"Sending {path}", unit="B", unit_scale=True, unit_divisor=1024)
             with open(path, "rb") as f:
@@ -126,6 +132,7 @@ def open_udp_sock(path):
                     # read the bytes from the file
                     bytes_read = f.read(BUFFER_SIZE)
                     if not bytes_read:
+                        print("download finished")
                         # file transmitting is done
                         break
                     # we use sendall to assure transimission in
@@ -133,8 +140,8 @@ def open_udp_sock(path):
                     server_2.sendall(bytes_read)
                     # update the progress bar
                     progress.update(len(bytes_read))
+                    print("still download")
             # close the socket
-            server_2.close()
             flag=False
 
 
