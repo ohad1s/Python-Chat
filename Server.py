@@ -21,9 +21,12 @@ data_names="files: " + ",".join(files_names)
 host = '127.0.0.1'
 port_tcp = 55000
 port_udp = 44000
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    # IPV4 -TCP
 
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    # IPV4 -TCP
 server.bind((host, port_tcp))
+
+server_2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # IPV4 -UDP
+server_2.bind((host, port_udp))
 
 
 def startChat():
@@ -91,12 +94,11 @@ def send(client):
                 if msg_arr[2][:-1] in files_names:
                     file_index = files_names.index(msg_arr[2][:-1])
                     path_to_send=files_list[file_index]
-                    thread_udp = threading.Thread(target=open_udp_sock, args=(path_to_send,is_open,msg_arr))
+                    send_msg_to_someone("con_udp".encode("utf-8"), msg_arr[0][:-1])
+                    thread_udp = threading.Thread(target=download_file, args=(path_to_send,msg_arr))
                     thread_udp.start()
                 else:
                     send_msg_to_someone("file not found!\n".encode("utf-8"),msg_arr[0][:-1])
-            elif msg_arr[1] == "con":
-
             else:
                 send_msg(message.encode("utf-8"))
         except:
@@ -108,25 +110,30 @@ def send(client):
             nicknames_list.remove(nickname)
             break
 
-def open_udp_sock(path,is_open,msg_arr):
+def download_file(path,msg_arr):
     """
 
     """
+    print(msg_arr[0][:-1])
+    print("down2")
+    start_flag=False
     flag = True
-    if is_open == False:
-        server_2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # IPV4 -UDP
-        is_open = True
-        server_2.bind((host, port_udp))
-    send_msg_to_someone("con_udp".encode("utf-8"), msg_arr[0][:-1])
     while flag:
         msg, client_addr= server_2.recvfrom(1024)
-        if msg=="ack":
+        print("im here")
+        print(msg)
+        if not start_flag:
+            send_msg_to_someone("start".encode("utf-8"),msg_arr[0][:-1])
+            print("sent")
+            start_flag=True
+        if msg.decode("utf-8")=="ack":
             print(msg)
             server_2.sendto(msg,client_addr)
-        if msg=="ACK":
+        if msg.decode("utf-8")=="ACK":
             print(msg)
             filesize = os.path.getsize(path)
             progress = tqdm.tqdm(range(filesize), f"Sending {path}", unit="B", unit_scale=True, unit_divisor=1024)
+            print("im here2")
             with open(path, "rb") as f:
                 while True:
                     # read the bytes from the file
@@ -137,7 +144,8 @@ def open_udp_sock(path,is_open,msg_arr):
                         break
                     # we use sendall to assure transimission in
                     # busy networks
-                    server_2.sendall(bytes_read)
+
+                    server_2.sendto(bytes_read,client_addr)
                     # update the progress bar
                     progress.update(len(bytes_read))
                     print("still download")

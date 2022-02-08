@@ -128,7 +128,8 @@ class Client:
                     self.users.remove("accounts")
                 elif message == 'con_udp':
                     print(message)
-                    thread_dowmload = threading.Thread(target=self.open_udp_sock)
+                    self.open_udp_sock()
+                    thread_dowmload = threading.Thread(target=self.download_file)
                     thread_dowmload.start()
                 else:
                     if (self.gui_play):
@@ -153,20 +154,20 @@ class Client:
         """
 
         """
-        print("open sock udp")
         self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.send("con".encode("utf-8"))
 
     def download_file(self):
+        print("down")
         self.udp_sock.sendto("ack".encode("utf-8"), (host, port_udp))
         msg_ack, serv_addr = self.udp_sock.recvfrom(1024)
         print(msg_ack)
-        if msg_ack == "ack":
+        if msg_ack.decode("utf-8") == "ack":
             print(msg_ack)
             self.udp_sock.sendto("ACK".encode("utf-8"), (host, port_udp))
             # receive the file infos
             # receive using client socket, not server socket
             received = self.udp_sock.recv(BUFFER_SIZE).decode()
+            print(received)
             filename, filesize = received.split(SEPARATOR)
             # remove absolute path if there is
             filename = os.path.basename(filename)
