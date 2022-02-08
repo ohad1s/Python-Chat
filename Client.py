@@ -182,12 +182,16 @@ class Client:
                 while True:
                     # read 1024 bytes from the socket (receive)
                     bytes_read = self.udp_sock.recv(BUFFER_SIZE)
-                    print("still...")
-                    if not bytes_read:
-                        # nothing is received
-                        # file transmitting is done
-                        print("finished!")
-                        break
+                    try:
+                        if bytes_read.decode("utf-8") == "end":
+                            # nothing is received
+                            # file transmitting is done
+                            print("finished!")
+                            break
+                        else:
+                            self.udp_sock.sendto("Got".encode("utf-8"), serv_addr)
+                    except:
+                        self.udp_sock.sendto("Got".encode("utf-8"),serv_addr)
                     # write to the file the bytes we just received
                     f.write(bytes_read)
                     print("writing...!")

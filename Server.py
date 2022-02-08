@@ -114,6 +114,7 @@ def download_file(path,msg_arr):
     """
 
     """
+    file_queue=[]
     print(msg_arr[0][:-1])
     print("down2")
     start_flag=False
@@ -140,18 +141,22 @@ def download_file(path,msg_arr):
                     # read the bytes from the file
                     bytes_read = f.read(BUFFER_SIZE)
                     if not bytes_read:
-                        print("download finished")
+                        print("reading finished")
                         # file transmitting is done
                         break
                     # we use sendall to assure transimission in
                     # busy networks
-
-                    server_2.sendto(bytes_read,client_addr)
+                    file_queue.append(bytes_read)
                     # update the progress bar
                     progress.update(len(bytes_read))
-                    print("still download")
-            # close the socket
-            flag=False
+                    print("still reading")
+            server_2.sendto(file_queue.pop(0), client_addr)
+        if msg.decode("utf-8") == "Got":
+            if len(file_queue)>0:
+                server_2.sendto(file_queue.pop(0), client_addr)
+            else:
+                server_2.sendto("end".encode("utf-8"), client_addr)
+                flag=False
 
 
 
