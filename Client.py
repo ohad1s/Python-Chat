@@ -5,12 +5,9 @@ import tkinter
 import tkinter.scrolledtext
 from tkinter import simpledialog
 from tkinter import *
-from venv import *
-import tqdm
 from tkinter.filedialog import askopenfilename
-# import tqdm
-# SEPARATOR = "<SEPARATOR>"
-# BUFFER_SIZE = 4096 # send 4096 bytes each time step
+import tqdm
+
 host = '127.0.0.1'
 port_tcp = 55000
 port_udp = 44000
@@ -60,14 +57,6 @@ class Client:
         self.Frame4msg.grid(row = 5, column = 1, rowspan = 1, columnspan = 3, \
                             sticky = W+E+N+S)
 
-        # self.Frame2files = Frame(master=self.win)
-        # self.Frame2files.grid(row = 3, column = 0, rowspan = 3, columnspan = 1, \
-        #                     sticky = W+E+N+S)
-        #
-        # self.send_file = tkinter.Button(self.Frame2files, text="Choose File", command=self.choose_file)
-        # self.send_file.config(font=('Ariel', 12))
-        # self.send_file.pack(padx=20, pady=5)
-
         self.chat_lable = tkinter.Label(self.Frame3txt, text="Chat:", bg="lightgray")
         self.chat_lable.config(font=('Ariel', 12))
         self.chat_lable.pack(padx=20, pady=5)
@@ -87,17 +76,17 @@ class Client:
         self.send_but.config(font=('Ariel', 12))
         self.send_but.pack(padx=20, pady=5)
 
-        self.nicknamesFrame1 = Frame(master=self.win)
-        self.nicknamesFrame1.grid(row = 0, column = 0, rowspan = 3, columnspan = 1, sticky = W+E+N+S)
-        self.user_list=Listbox(master=self.nicknamesFrame1)
-        self.user_list.pack(side="left",expand=1,fill="both")
-        self.userlist_scrollbar = Scrollbar(self.nicknamesFrame1,orient="vertical")
-        self.userlist_scrollbar.config(command=self.user_list.yview)
-        self.userlist_scrollbar.pack(side="left",fill="both")
-        self.user_list.config(yscrollcommand=self.userlist_scrollbar.set)
+        # self.nicknamesFrame1 = Frame(master=self.win)
+        # self.nicknamesFrame1.grid(row = 0, column = 0, rowspan = 3, columnspan = 1, sticky = W+E+N+S)
+        # self.user_list=Listbox(master=self.nicknamesFrame1)
+        # self.user_list.pack(side="left",expand=1,fill="both")
+        # self.userlist_scrollbar = Scrollbar(self.nicknamesFrame1,orient="vertical")
+        # self.userlist_scrollbar.config(command=self.user_list.yview)
+        # self.userlist_scrollbar.pack(side="left",fill="both")
+        # self.user_list.config(yscrollcommand=self.userlist_scrollbar.set)
 
-        for nick in self.users:
-            self.user_list.insert(END,nick)
+        # for nick in self.users:
+        #     self.user_list.insert(END,nick)
 
         self.gui_play = True
         self.win.protocol("WM_DELETE_WINDOW",self.stop)
@@ -123,9 +112,9 @@ class Client:
                 message = self.sock.recv(1024).decode('utf-8')
                 if message == 'NICKNAME':
                     self.sock.send(self.nickname.encode('utf-8'))
-                elif message.startswith("accounts"):
-                    self.users = message.split("|")
-                    self.users.remove("accounts")
+                # elif message.startswith("accounts"):
+                #     self.users = message.split("|")
+                #     self.users.remove("accounts")
                 elif message == 'con_udp':
                     print(message)
                     self.open_udp_sock()
@@ -152,55 +141,42 @@ class Client:
 
     def open_udp_sock(self):
         """
-
+        this method open a udp socket for the client in order to download a file
         """
         self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def download_file(self):
-        print("down")
+        """
+        this method downloading a file got from the server
+        """
         self.udp_sock.sendto("ack".encode("utf-8"), (host, port_udp))
         msg_ack, serv_addr = self.udp_sock.recvfrom(1024)
         print(msg_ack)
         if msg_ack.decode("utf-8") == "ack":
             print(msg_ack)
             self.udp_sock.sendto("ACK".encode("utf-8"), (host, port_udp))
-            # receive the file infos
-            # receive using client socket, not server socket
             received = self.udp_sock.recv(BUFFER_SIZE).decode()
             print(received)
             filename, filesize = received.split(SEPARATOR)
-            # remove absolute path if there is
             filename = os.path.basename(filename)
-            # convert to integer
             filesize = int(filesize)
 
-            # start receiving the file from the socket
-            # and writing to the file stream
             progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True,
                                  unit_divisor=1024)
             with open(filename, "wb") as f:
                 while True:
-                    # read 1024 bytes from the socket (receive)
                     bytes_read = self.udp_sock.recv(BUFFER_SIZE)
                     try:
                         if bytes_read.decode("utf-8") == "end":
-                            # nothing is received
-                            # file transmitting is done
-                            print("finished!")
                             break
                         else:
                             self.udp_sock.sendto("Got".encode("utf-8"), serv_addr)
                     except:
                         self.udp_sock.sendto("Got".encode("utf-8"),serv_addr)
-                    # write to the file the bytes we just received
                     f.write(bytes_read)
-                    print("writing...!")
-                    # update the progress bar
                     progress.update(len(bytes_read))
 
-            # close the client socket
             self.udp_sock.close()
 
 
 client=Client()
-

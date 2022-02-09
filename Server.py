@@ -3,9 +3,9 @@ import socket
 import threading
 import tkinter
 from tkinter import *
-import tqdm
 global is_open
 is_open=False
+import tqdm
 
 
 SEPARATOR = "<SEPARATOR>"
@@ -78,8 +78,8 @@ def send(client):
     """
     while True:
         try:
-            data = "accounts|" + "|".join(nicknames_list)
-            send_msg(data.encode("utf-8"))
+            # data = "accounts|" + "|".join(nicknames_list)
+            # send_msg(data.encode("utf-8"))
             message = client.recv(1024).decode("utf-8")
             msg_arr = message.split(" ")
             if msg_arr[1]=="to":
@@ -88,6 +88,9 @@ def send(client):
                     send_msg_to_someone(message.encode("utf-8"),someone)
                 else:
                     send_msg(message.encode("utf-8"))
+            elif msg_arr[1]=="nicknames\n":
+                data_nicknames = "nicknames: " + ",".join(nicknames_list)
+                send_msg_to_someone((data_nicknames+"\n").encode("utf-8"),msg_arr[0][:-1])
             elif msg_arr[1]=="files\n":
                 send_msg_to_someone((data_names+"\n").encode("utf-8"),msg_arr[0][:-1])
             elif msg_arr[1]=="download":
@@ -112,21 +115,19 @@ def send(client):
 
 def download_file(path,msg_arr):
     """
-
+    this method sends the file to the client
+    using the udp socket with realible principles (FAST reliable UDP)
     """
     file_queue=[]
-    print(msg_arr[0][:-1])
-    print("down2")
     start_flag=False
     flag = True
     while flag:
         msg, client_addr= server_2.recvfrom(1024)
-        print("im here")
-        print(msg)
-        if not start_flag:
-            send_msg_to_someone("start".encode("utf-8"),msg_arr[0][:-1])
-            print("sent")
-            start_flag=True
+        # if not start_flag:
+        #     cli_index = nicknames_list.index(msg_arr[0][:-1])
+        #     cli_to_send = clients_list[cli_index]
+        #     server.sendto("start".encode("utf-8"),cli_to_send)
+        #     start_flag=True
         if msg.decode("utf-8")=="ack":
             print(msg)
             server_2.sendto(msg,client_addr)
@@ -135,13 +136,11 @@ def download_file(path,msg_arr):
             filesize = os.path.getsize(path)
             server_2.sendto(f"{path}{SEPARATOR}{filesize}".encode(),client_addr)
             progress = tqdm.tqdm(range(filesize), f"Sending {path}", unit="B", unit_scale=True, unit_divisor=1024)
-            print("im here2")
             with open(path, "rb") as f:
                 while True:
                     # read the bytes from the file
                     bytes_read = f.read(BUFFER_SIZE)
                     if not bytes_read:
-                        print("reading finished")
                         # file transmitting is done
                         break
                     # we use sendall to assure transimission in
@@ -149,7 +148,6 @@ def download_file(path,msg_arr):
                     file_queue.append(bytes_read)
                     # update the progress bar
                     progress.update(len(bytes_read))
-                    print("still reading")
             server_2.sendto(file_queue.pop(0), client_addr)
         if msg.decode("utf-8") == "Got":
             if len(file_queue)>0:
