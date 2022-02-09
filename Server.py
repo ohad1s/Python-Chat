@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 import os
 import socket
@@ -19,7 +20,7 @@ files_names=["air","Cii","names","try"]
 data_names="files: " + ",".join(files_names)
 
 
-host = '127.0.0.1'
+host = '10.9.0.185'
 port_tcp = 55000
 port_udp = 44000
 
@@ -128,10 +129,10 @@ def download_file(path,msg_arr):
         msg, client_addr= server_2.recvfrom(1024)
         if msg.decode("utf-8")=="ack":
             print(msg)
-            start_for_rtt=datetime.now()
+            # start_for_rtt=time.time()
             server_2.sendto(msg,client_addr)
         elif msg.decode("utf-8")=="ACK":
-            # end_for_rtt=datetime.now()-start_for_rtt #sec
+            # end_for_rtt=time.time()-start_for_rtt #sec
             # print(end_for_rtt)
             print(msg)
             filesize = os.path.getsize(path)
@@ -147,15 +148,23 @@ def download_file(path,msg_arr):
             print(len(file_queue), "loops")
             server_2.sendto(f"{path}{SEPARATOR}{filesize}{SEPARATOR}{len(file_queue)}".encode(),client_addr)
             # server_2.sendto(file_queue[i], client_addr)
-        else:
-            print(msg)
-            i = int(msg.decode("utf-8"))
-            if len(file_queue)>int(msg.decode("utf-8")):
-                server_2.sendto(file_queue[i], client_addr)
-                # start_time=datetime.now()
-            else:
-                server_2.sendto("end".encode("utf-8"), client_addr)
-                flag=False
+            timeout=0.010
+            print(timeout)
+            timeout_start = time.time()
+            file_flag = True
+            while file_flag:
+                while time.time() < timeout_start + timeout:
+                    msg, client_addr = server_2.recvfrom(1024)
+                    print(msg,"sdfdsfds")
+                    break
+                print(msg)
+                i = int(msg.decode("utf-8"))
+                if len(file_queue)>int(msg.decode("utf-8")):
+                    print("sent")
+                    server_2.sendto(file_queue[i], client_addr)
+                else:
+                    server_2.sendto("end".encode("utf-8"), client_addr)
+                    file_flag=False
 
 
 

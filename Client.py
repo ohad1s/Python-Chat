@@ -8,7 +8,7 @@ from tkinter import *
 from tkinter.filedialog import askopenfilename
 import tqdm
 
-host = '127.0.0.1'
+host = '10.9.0.185'
 port_tcp = 55000
 port_udp = 44000
 
