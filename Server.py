@@ -13,8 +13,8 @@ BUFFER_SIZE = 4096 # send 4096 bytes each time step
 
 nicknames_list=[]
 clients_list=[]
-files_list=["files/air.jpeg","files/cii.txt","files/DO.txt"]
-files_names=["air","Cii","names"]
+files_list=["files/air.jpeg","files/cii.txt","files/DO.txt","files/try.txt","files/6.MP4"]
+files_names=["air","Cii","names","try","pucon"]
 data_names="files: " + ",".join(files_names)
 
 
@@ -122,6 +122,7 @@ def download_file(path,msg_arr):
     start_flag=False
     flag = True
     while flag:
+        print("im here")
         msg, client_addr= server_2.recvfrom(1024)
         # if not start_flag:
         #     cli_index = nicknames_list.index(msg_arr[0][:-1])
@@ -131,10 +132,9 @@ def download_file(path,msg_arr):
         if msg.decode("utf-8")=="ack":
             print(msg)
             server_2.sendto(msg,client_addr)
-        if msg.decode("utf-8")=="ACK":
+        elif msg.decode("utf-8")=="ACK":
             print(msg)
             filesize = os.path.getsize(path)
-            server_2.sendto(f"{path}{SEPARATOR}{filesize}".encode(),client_addr)
             progress = tqdm.tqdm(range(filesize), f"Sending {path}", unit="B", unit_scale=True, unit_divisor=1024)
             with open(path, "rb") as f:
                 while True:
@@ -148,13 +148,34 @@ def download_file(path,msg_arr):
                     file_queue.append(bytes_read)
                     # update the progress bar
                     progress.update(len(bytes_read))
-            server_2.sendto(file_queue.pop(0), client_addr)
-        if msg.decode("utf-8") == "Got":
-            if len(file_queue)>0:
-                server_2.sendto(file_queue.pop(0), client_addr)
+            print(len(file_queue), "loops")
+            server_2.sendto(f"{path}{SEPARATOR}{filesize}{SEPARATOR}{len(file_queue)}".encode(),client_addr)
+            # server_2.sendto(file_queue[i], client_addr)
+        else:
+            print(msg)
+            i = int(msg.decode("utf-8"))
+            if len(file_queue)>int(msg.decode("utf-8")):
+                server_2.sendto(file_queue[i], client_addr)
+                print(i)
             else:
                 server_2.sendto("end".encode("utf-8"), client_addr)
                 flag=False
+
+
+
+
+        # elif msg.decode("utf-8") == str(i):
+        #     # print("im here")
+        #     # i += 1
+        #     if len(file_queue)>i:
+        #         server_2.sendto(file_queue[i], client_addr)
+        #         print(i)
+        #     else:
+        #         server_2.sendto("end".encode("utf-8"), client_addr)
+        #         flag=False
+        # elif msg.decode("utf-8") != str(i) and i < len(file_queue):
+        #     server_2.sendto(file_queue[i], client_addr)
+
 
 
 

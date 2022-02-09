@@ -18,29 +18,25 @@ SEPARATOR = "<SEPARATOR>"
 
 class Client:
 
-
     def __init__(self):
         """
         this method is the constructor of the client chat
         """
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((host,port_tcp))
+        self.sock.connect((host, port_tcp))
 
         msg = tkinter.Tk()
         msg.withdraw()
 
-
         self.nickname = simpledialog.askstring("NickName", "please enter your nickname", parent=msg)
         self.gui_play = False
         self.running = True
-        self.users=[]
-
+        self.users = []
 
         gui_thread = threading.Thread(target=self.gui_loop)
         receive_thread = threading.Thread(target=self.receive)
         gui_thread.start()
         receive_thread.start()
-
 
     def gui_loop(self):
         """
@@ -51,11 +47,11 @@ class Client:
         self.win.configure(bg="lightgray")
 
         self.Frame3txt = Frame(master=self.win)
-        self.Frame3txt.grid(row = 0, column = 1, rowspan = 5, columnspan = 3, \
-                            sticky = W+E+N+S)
+        self.Frame3txt.grid(row=0, column=1, rowspan=5, columnspan=3, \
+                            sticky=W + E + N + S)
         self.Frame4msg = Frame(master=self.win)
-        self.Frame4msg.grid(row = 5, column = 1, rowspan = 1, columnspan = 3, \
-                            sticky = W+E+N+S)
+        self.Frame4msg.grid(row=5, column=1, rowspan=1, columnspan=3, \
+                            sticky=W + E + N + S)
 
         self.chat_lable = tkinter.Label(self.Frame3txt, text="Chat:", bg="lightgray")
         self.chat_lable.config(font=('Ariel', 12))
@@ -89,7 +85,7 @@ class Client:
         #     self.user_list.insert(END,nick)
 
         self.gui_play = True
-        self.win.protocol("WM_DELETE_WINDOW",self.stop)
+        self.win.protocol("WM_DELETE_WINDOW", self.stop)
         self.win.mainloop()
 
     def stop(self):
@@ -101,7 +97,6 @@ class Client:
         self.win.destroy()
         self.sock.close()
         exit(0)
-
 
     def receive(self):
         """
@@ -118,6 +113,7 @@ class Client:
                 elif message == 'con_udp':
                     print(message)
                     self.open_udp_sock()
+                    print(self.udp_sock)
                     thread_dowmload = threading.Thread(target=self.download_file)
                     thread_dowmload.start()
                 else:
@@ -137,7 +133,7 @@ class Client:
         """
         message = f"{self.nickname}: {self.msg_box.get('1.0', 'end')}"
         self.sock.send(message.encode('utf-8'))
-        self.msg_box.delete('1.0','end')
+        self.msg_box.delete('1.0', 'end')
 
     def open_udp_sock(self):
         """
@@ -149,6 +145,7 @@ class Client:
         """
         this method downloading a file got from the server
         """
+        i = 0
         self.udp_sock.sendto("ack".encode("utf-8"), (host, port_udp))
         msg_ack, serv_addr = self.udp_sock.recvfrom(1024)
         print(msg_ack)
@@ -157,26 +154,37 @@ class Client:
             self.udp_sock.sendto("ACK".encode("utf-8"), (host, port_udp))
             received = self.udp_sock.recv(BUFFER_SIZE).decode()
             print(received)
-            filename, filesize = received.split(SEPARATOR)
+            filename, filesize, loops = received.split(SEPARATOR)
+            print(loops)
             filename = os.path.basename(filename)
             filesize = int(filesize)
 
             progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True,
                                  unit_divisor=1024)
             with open(filename, "wb") as f:
+                # i = 0
+                self.udp_sock.sendto(str(i).encode("utf-8"), serv_addr)
                 while True:
                     bytes_read = self.udp_sock.recv(BUFFER_SIZE)
+                    if bytes_read:
+                        i += 1
                     try:
                         if bytes_read.decode("utf-8") == "end":
+                            print(bytes_read.decode("utf-8"))
+                            # i=0
                             break
                         else:
-                            self.udp_sock.sendto("Got".encode("utf-8"), serv_addr)
+                            self.udp_sock.sendto(str(i).encode("utf-8"), serv_addr)
+                            print("else",i)
                     except:
-                        self.udp_sock.sendto("Got".encode("utf-8"),serv_addr)
+                        self.udp_sock.sendto(str(i).encode("utf-8"), serv_addr)
+                        print("exp: ",i)
                     f.write(bytes_read)
+                    # print(i)
                     progress.update(len(bytes_read))
-
+                    print(progress)
+            print("sock closed")
             self.udp_sock.close()
 
 
-client=Client()
+client = Client()
