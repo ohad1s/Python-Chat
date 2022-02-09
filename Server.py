@@ -148,7 +148,7 @@ def download_file(path,msg_arr):
             print(len(file_queue), "loops")
             server_2.sendto(f"{path}{SEPARATOR}{filesize}{SEPARATOR}{len(file_queue)}".encode(),client_addr)
             # server_2.sendto(file_queue[i], client_addr)
-            timeout=0.01
+            timeout=0.04
             last_msg = None
             print(timeout)
             timeout_start = time.time()
@@ -162,8 +162,8 @@ def download_file(path,msg_arr):
                 i = int(msg.decode("utf-8"))
                 if last_msg == i:
                     timeout += 0.01
-                else:
-                    timeout -= 0.01
+                # else:
+                #     timeout -= 0.01
                 last_msg = i
                 if len(file_queue)>int(msg.decode("utf-8")):
                     print("sent")
