@@ -20,7 +20,7 @@ files_names=["air","Cii","names","try"]
 data_names="files: " + ",".join(files_names)
 
 
-host = '10.9.0.185'
+host = '127.0.0.1'
 port_tcp = 55000
 port_udp = 44000
 
@@ -148,7 +148,8 @@ def download_file(path,msg_arr):
             print(len(file_queue), "loops")
             server_2.sendto(f"{path}{SEPARATOR}{filesize}{SEPARATOR}{len(file_queue)}".encode(),client_addr)
             # server_2.sendto(file_queue[i], client_addr)
-            timeout=0.010
+            timeout=0.01
+            last_msg = None
             print(timeout)
             timeout_start = time.time()
             file_flag = True
@@ -159,6 +160,11 @@ def download_file(path,msg_arr):
                     break
                 print(msg)
                 i = int(msg.decode("utf-8"))
+                if last_msg == i:
+                    timeout += 0.01
+                else:
+                    timeout -= 0.01
+                last_msg = i
                 if len(file_queue)>int(msg.decode("utf-8")):
                     print("sent")
                     server_2.sendto(file_queue[i], client_addr)

@@ -8,7 +8,7 @@ from tkinter import *
 from tkinter.filedialog import askopenfilename
 import tqdm
 
-host = '10.9.0.185'
+host = '127.0.0.1'
 port_tcp = 55000
 port_udp = 44000
 
@@ -45,7 +45,6 @@ class Client:
         self.win = tkinter.Tk()
         self.win.title("Ciiii Chat")
         self.win.configure(bg="lightgray")
-
         self.Frame3txt = Frame(master=self.win)
         self.Frame3txt.grid(row=0, column=1, rowspan=5, columnspan=3, \
                             sticky=W + E + N + S)
@@ -175,10 +174,8 @@ class Client:
                             break
                         else:
                             self.udp_sock.sendto(str(i).encode("utf-8"), serv_addr)
-                            print("else",i)
                     except:
                         self.udp_sock.sendto(str(i).encode("utf-8"), serv_addr)
-                        print("exp: ",i)
                     f.write(bytes_read)
                     # print(i)
                     progress.update(len(bytes_read))
