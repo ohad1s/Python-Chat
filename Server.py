@@ -13,8 +13,8 @@ BUFFER_SIZE = 4096 # send 4096 bytes each time step
 
 nicknames_list=[]
 clients_list=[]
-files_list=["files/air.jpeg","files/cii.txt","files/DO.txt","files/try.txt","files/6.MP4"]
-files_names=["air","Cii","names","try","pucon"]
+files_list=["files/air.jpeg","files/cii.txt","files/DO.txt","files/try.txt"]
+files_names=["air","Cii","names","try"]
 data_names="files: " + ",".join(files_names)
 
 
