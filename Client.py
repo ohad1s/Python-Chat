@@ -1,6 +1,7 @@
 import os
 import socket
 import threading
+import time
 import tkinter
 import tkinter.scrolledtext
 from tkinter import simpledialog
@@ -12,7 +13,7 @@ host = '127.0.0.1'
 port_tcp = 55000
 port_udp = 44000
 
-BUFFER_SIZE = 4096
+BUFFER_SIZE = 65527
 SEPARATOR = "<SEPARATOR>"
 
 
@@ -160,11 +161,20 @@ class Client:
 
             progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True,
                                  unit_divisor=1024)
+            self.udp_sock.sendto("START".encode("utf-8"), serv_addr)
             with open(filename, "wb") as f:
-                # i = 0
-                self.udp_sock.sendto(str(i).encode("utf-8"), serv_addr)
-                while True:
-                    bytes_read = self.udp_sock.recv(BUFFER_SIZE)
+                # file_set=set()
+                i = 0
+                # self.udp_sock.sendto(str(i).encode("utf-8"), serv_addr)
+                timer_flag = True
+                timeout = 0.05
+                timeout_start = time.time()
+                while timer_flag:
+                    while time.time() < timeout_start + timeout:
+                        # while True:
+                        bytes_read = self.udp_sock.recv(BUFFER_SIZE)
+                        print("timeout_msg")
+                        break
                     if bytes_read:
                         i += 1
                     try:
@@ -172,14 +182,24 @@ class Client:
                             print(bytes_read.decode("utf-8"))
                             # i=0
                             break
+                            timer_flag = False
                         else:
-                            self.udp_sock.sendto(str(i).encode("utf-8"), serv_addr)
+                            self.udp_sock.sendto(("GOT" + str(i)).encode("utf-8"), serv_addr)
                     except:
-                        self.udp_sock.sendto(str(i).encode("utf-8"), serv_addr)
+                        self.udp_sock.sendto(("GOT" + str(i)).encode("utf-8"), serv_addr)
+
                     f.write(bytes_read)
+                    # file_set.add(bytes_read)
+                    # prog_str=str(progress)
+                    # prog_str.split("|")
+                    # self.sock.send("Downloading: ".encode("utf-8")+str(progress).encode("utf-8")+"\n".encode("utf-8"))
                     # print(i)
                     progress.update(len(bytes_read))
                     print(progress)
+                # for bytes_r in file_set:
+                #     f.write(bytes_r)
+
+            f.close()
             print("sock closed")
             self.udp_sock.close()
 
