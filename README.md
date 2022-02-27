@@ -11,7 +11,7 @@
 In this task we were required to build a chat system with principles of communication protocols.
 When the uniqueness of the chat is when we transfer files by implementing the udp protocol with the principles of tcp.
 
-##classs:
+## Classes:
 
 ### Client
 
