@@ -67,4 +67,6 @@ To install tqdm write this command in the terminal(for python3).
 
 Then in separate terminals write this commands:
 * python3 Server.py
+![img_1.png](img_1.png)
 * python3 Client.py
+![img_2.png](img_2.png)
