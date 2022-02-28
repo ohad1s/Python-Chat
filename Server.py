@@ -228,6 +228,8 @@ class Server:
                         if msg.decode("utf-8").startswith("GOT"):
                             print(msg)
                             got_index = msg.decode("utf-8")[3]
+                            if got_index==0:
+                                self.server_2.sendto(file_queue[0], client_addr)
                             if got_index != last_index_got:
                                 last_index_got = got_index
                                 for i in sent_list:

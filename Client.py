@@ -169,7 +169,9 @@ Ohad and Dvir Cii Chat!
             if msg_ack.decode("utf-8") == "ack":
                 print(msg_ack)
                 self.udp_sock.sendto("ACK".encode("utf-8"), (host, port_udp))
-                received = self.udp_sock.recv(BUFFER_SIZE).decode()
+                received = "null"
+                while received == "null":
+                    received = self.udp_sock.recv(BUFFER_SIZE).decode()
                 print(received)
                 filename, filesize, loops = received.split(SEPARATOR)
                 print(loops)
