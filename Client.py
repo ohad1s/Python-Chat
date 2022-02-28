@@ -72,17 +72,35 @@ class Client:
         self.send_but.config(font=('Ariel', 12))
         self.send_but.pack(padx=20, pady=5)
 
-        # self.nicknamesFrame1 = Frame(master=self.win)
-        # self.nicknamesFrame1.grid(row = 0, column = 0, rowspan = 3, columnspan = 1, sticky = W+E+N+S)
+        self.nicknamesFrame1 = Frame(master=self.win)
+        self.nicknamesFrame1.grid(row=0, column=0, rowspan=3, columnspan=1, sticky=W + E + N + S)
+        text2 = tkinter.Text(self.nicknamesFrame1, height=20, width=50)
+        scroll = tkinter.Scrollbar(self.nicknamesFrame1, command=text2.yview)
+        text2.configure(yscrollcommand=scroll.set)
+        text2.tag_configure('Ariel', font=('Arial', 12, 'bold', 'normal'))
+        text2.tag_configure('big', font=('Ariel', 20, 'bold'))
+        text2.tag_configure('color',
+                            foreground='#476042',
+                            font=('Ariel', 12, 'bold'))
+        text2.insert(tkinter.END, '\nInstruction:\n', 'big')
+        quote = """Get nicknames:\n'nicknames'\nSend private message:\n'to *nickname* *your message*'
+Get files names:\n'files'\nDownload a specific file:\n'download *file name*'\nin order to disconnect:\njust click the X\nAfter disconnection you can connect again:\nrun the application again\n\n\n
+Ohad and Dvir Cii Chat!
+                """
+        text2.insert(tkinter.END, quote, 'color')
+        text2.pack(side=tkinter.LEFT)
+        scroll.pack(side=tkinter.RIGHT, fill=tkinter.Y)
         # self.user_list=Listbox(master=self.nicknamesFrame1)
         # self.user_list.pack(side="left",expand=1,fill="both")
         # self.userlist_scrollbar = Scrollbar(self.nicknamesFrame1,orient="vertical")
         # self.userlist_scrollbar.config(command=self.user_list.yview)
         # self.userlist_scrollbar.pack(side="left",fill="both")
         # self.user_list.config(yscrollcommand=self.userlist_scrollbar.set)
-
-        # for nick in self.users:
-        #     self.user_list.insert(END,nick)
+        # self.user_list.insert(0,"Download a specific file:\n 'download *file name*'")
+        # self.user_list.insert(0,"Get files names:\n 'files'")
+        # self.user_list.insert(0,"Send private message:\n 'to *nickname* *your message'")
+        # self.user_list.insert(0,"Get nicknames:\n 'nicknames'")
+        # self.user_list.insert(0,"Instruction:")
 
         self.gui_play = True
         self.win.protocol("WM_DELETE_WINDOW", self.stop)
@@ -107,9 +125,6 @@ class Client:
                 message = self.sock.recv(1024).decode('utf-8')
                 if message == 'NICKNAME':
                     self.sock.send(self.nickname.encode('utf-8'))
-                # elif message.startswith("accounts"):
-                #     self.users = message.split("|")
-                #     self.users.remove("accounts")
                 elif message == 'con_udp':
                     print(message)
                     self.open_udp_sock()
@@ -146,62 +161,54 @@ class Client:
         this method downloading a file got from the server
         """
         i = 0
-        self.udp_sock.sendto("ack".encode("utf-8"), (host, port_udp))
-        msg_ack, serv_addr = self.udp_sock.recvfrom(1024)
-        print(msg_ack)
-        if msg_ack.decode("utf-8") == "ack":
+        msg_ack = "null"
+        while (msg_ack == "null"):
+            self.udp_sock.sendto("ack".encode("utf-8"), (host, port_udp))
+            msg_ack, serv_addr = self.udp_sock.recvfrom(1024)
             print(msg_ack)
-            self.udp_sock.sendto("ACK".encode("utf-8"), (host, port_udp))
-            received = self.udp_sock.recv(BUFFER_SIZE).decode()
-            print(received)
-            filename, filesize, loops = received.split(SEPARATOR)
-            print(loops)
-            filename = os.path.basename(filename)
-            filesize = int(filesize)
+            if msg_ack.decode("utf-8") == "ack":
+                print(msg_ack)
+                self.udp_sock.sendto("ACK".encode("utf-8"), (host, port_udp))
+                received = self.udp_sock.recv(BUFFER_SIZE).decode()
+                print(received)
+                filename, filesize, loops = received.split(SEPARATOR)
+                print(loops)
+                filename = os.path.basename(filename)
+                filesize = int(filesize)
 
-            progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True,
-                                 unit_divisor=1024)
-            self.udp_sock.sendto("START".encode("utf-8"), serv_addr)
-            with open(filename, "wb") as f:
-                # file_set=set()
-                i = 0
-                # self.udp_sock.sendto(str(i).encode("utf-8"), serv_addr)
-                timer_flag = True
-                timeout = 0.05
-                timeout_start = time.time()
-                while timer_flag:
-                    while time.time() < timeout_start + timeout:
-                        # while True:
-                        bytes_read = self.udp_sock.recv(BUFFER_SIZE)
-                        print("timeout_msg")
-                        break
-                    if bytes_read:
-                        i += 1
-                    try:
-                        if bytes_read.decode("utf-8") == "end":
-                            print(bytes_read.decode("utf-8"))
-                            # i=0
+                progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True,
+                                     unit_divisor=1024)
+                self.udp_sock.sendto("START".encode("utf-8"), serv_addr)
+                with open(filename, "wb") as f:
+                    i = 0
+                    timer_flag = True
+                    timeout = 0.05
+                    timeout_start = time.time()
+                    while timer_flag:
+                        while time.time() < timeout_start + timeout:
+                            bytes_read = self.udp_sock.recv(BUFFER_SIZE)
+                            print("timeout_msg")
                             break
-                            timer_flag = False
-                        else:
+                        if bytes_read:
+                            i += 1
+                        try:
+                            if bytes_read.decode("utf-8") == "end":
+                                print(bytes_read.decode("utf-8"))
+                                # i=0
+                                break
+                                timer_flag = False
+                            else:
+                                self.udp_sock.sendto(("GOT" + str(i)).encode("utf-8"), serv_addr)
+                        except:
                             self.udp_sock.sendto(("GOT" + str(i)).encode("utf-8"), serv_addr)
-                    except:
-                        self.udp_sock.sendto(("GOT" + str(i)).encode("utf-8"), serv_addr)
 
-                    f.write(bytes_read)
-                    # file_set.add(bytes_read)
-                    # prog_str=str(progress)
-                    # prog_str.split("|")
-                    # self.sock.send("Downloading: ".encode("utf-8")+str(progress).encode("utf-8")+"\n".encode("utf-8"))
-                    # print(i)
-                    progress.update(len(bytes_read))
-                    print(progress)
-                # for bytes_r in file_set:
-                #     f.write(bytes_r)
+                        f.write(bytes_read)
+                        progress.update(len(bytes_read))
+                        print(progress)
 
-            f.close()
-            print("sock closed")
-            self.udp_sock.close()
+        f.close()
+        print("sock closed")
+        self.udp_sock.close()
 
 
 client = Client()
