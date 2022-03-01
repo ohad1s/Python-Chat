@@ -8,6 +8,7 @@
 In this project we implemented a Python Chat based on TCP connection. The Chat also include an option to download files from the Server, this option based on UDP connection with RDT (that we implemented).
 
 ## More about the chat:
+The project work on your local host.
 The project has 2 main classes:
 Server and Client
 The server running 2 sockets (TCP and UDP). He handles the messages of the chat, enables clients to see the connected nicknames,
@@ -36,25 +37,22 @@ Then the client close the UDP socket
 
 
 
-
-
-
-## GUI
-This classes generate a windows that show the chat(we use tkinter).
-
-
 ## How to run the project
-Open the folder of the project and write this line in the terminal command:
-(The server and the client work on your local host and because of that you don't need to write your ip address).
-Any command you need you write in separate terminal.
-For this project you need in your computer: python, tkinter, tqdmTיק
-To install tkinter write this command in the terminal(for Ubuntu).
-* sudo apt-get install python3-tk
+Enter the project directory, open cmd (windows) or terminal (linux) through project's path and run the following commands:
+python3 Server.py
+Then for any client you want  to connect run the following commands:
+python3 Client.py
+For the project we used tkinter and tqdm (python libraries).
+so first of all make sure you have them:
 
-To install tqdm write this command in the terminal(for python3).
-* pip3 install tqdm
+To install tkinter run the following command:
+* sudo apt-get install python3-tk (linux)
+* pip install tk (windows)
 
-Then in separate terminals write this commands:
+To install tqdm run the following command:
+* sudo apt install python3-tqdm (linux)
+* pip install tqdm (windows)
+
 * python3 Server.py
 ![img_1.png](img_1.png)
 * python3 Client.py
