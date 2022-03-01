@@ -38,10 +38,6 @@ Then the client close the UDP socket
 
 
 ## How to run the project
-Enter the project directory, open cmd (windows) or terminal (linux) through project's path and run the following commands:
-python3 Server.py
-Then for any client you want  to connect run the following commands:
-python3 Client.py
 For the project we used tkinter and tqdm (python libraries).
 so first of all make sure you have them:
 
@@ -49,12 +45,20 @@ To install tkinter run the following command:
 * sudo apt-get install python3-tk (linux)
 * pip install tk (windows)
 
-![צילום מסך 2022-03-01 184112](https://user-images.githubusercontent.com/92723105/156210965-6d85f63a-777d-450b-831b-983bfe128f59.png)
-
-
 To install tqdm run the following command:
 * sudo apt install python3-tqdm (linux)
 * pip install tqdm (windows)
+
+Then enter the project directory, open cmd (windows) or terminal (linux) through project's path and run the following commands:
+* python3 Server.py
+
+Then for any client you want  to connect run the following commands:
+* python3 Client.py
+
+
+
+![צילום מסך 2022-03-01 184112](https://user-images.githubusercontent.com/92723105/156210965-6d85f63a-777d-450b-831b-983bfe128f59.png)
+
 
 ![צילום מסך 2022-03-01 184127](https://user-images.githubusercontent.com/92723105/156211142-727802b5-15bc-4d75-80d3-3d033c4474c2.png)
 
