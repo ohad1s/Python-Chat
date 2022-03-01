@@ -22,6 +22,7 @@ BUFFER_SIZE = 4096  # send 4096 bytes each time step
 # continue_download=True
 
 host = '127.0.0.1'
+# host = '10.9.11.8'
 port_tcp = 55000
 port_udp = 44000
 
@@ -45,8 +46,8 @@ class Server:
         self.server_2.bind((host, port_udp))
         self.nicknames_list = []
         self.clients_list = []
-        self.files_list = ["files/air.jpeg", "files/cii.txt", "files/DO.txt", "files/try.txt"]
-        self.files_names = ["air", "Cii", "names", "try"]
+        self.files_list = ["files/air.jpeg", "files/cii.txt", "files/DO.txt", "files/try.txt", "files/amit-dvir.jpg"]
+        self.files_names = ["air", "Cii", "names", "try","amit-dvir"]
         self.data_names = "files: " + ",".join(self.files_names)
         self.continue_download=True
 
@@ -224,6 +225,9 @@ class Server:
                                     "utf-8"), msg_arr[0][:-1])
                             time.sleep(15)
                             if not self.continue_download:
+                                self.send_msg_to_someone(
+                                    "The download stopped!\n".encode(
+                                        "utf-8"), msg_arr[0][:-1])
                                 return
                         if msg.decode("utf-8").startswith("GOT"):
                             print(msg)
