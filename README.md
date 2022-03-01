@@ -3,48 +3,40 @@
 ## Written by Ohad Shirazi & Dvir Biton.
 
 
-## PROJECT EXPLANATION
+## About This Project:
 
-In this task we were required to build a chat system with principles of communication protocols.
-When the uniqueness of the chat is when we transfer files by implementing the udp protocol with the principles of tcp.
+In this project we implemented a Python Chat based on TCP connection. The Chat also include an option to download files from the Server, this option based on UDP connection with RDT (that we implemented).
 
-## Classes:
+## More about the chat:
+The project has 2 main classes:
+Server and Client
+The server running 2 sockets (TCP and UDP). He handles the messages of the chat, enables clients to see the connected nicknames,
+enables clients to see the files of the server and also download files.
+The messages of the chat going through the TCP connection.
+File download works on the UDP connection, but with RDT:
+It means using realible principles for congestion control (to prevent packet loss).
 
-### Client
+## File Download Algorithm:
+The server has UDP connection
+When a client wants to download a file from the server he have to ask for it (write in the chat: "download *file_name*" )
+The server accepts the request and asks the server to open a UDP connection.
+When the client is ready (opened the UDP connection) he start the "3 hand shake" procedure
+Then the Server sends information about the file, and get a confirmation from the client to start sending.
+The server sends the file "Go Back N" style.
+It means he have a congestion window, if the pact was received successfully, the cwnd is doubled, if not the cwnd is divided by 2.
+When a packet loss- we send all the cwnd again.
+The server and the Client also have a timer, when they got timeout and they didn't receive the packet, they sending again.
+After the server sent the last packet of the file and got an acknowledgement for it, he sends "end" message to the client
+Then the client close the UDP socket
 
-#### Fields:
-* Nickname
-* Gui play
-* Running
-* Users
-#### Functions:
-* Gui loop - This method is the gui loop for the chat.
-* Stop - This method close the chat for a client
-and also close the socket of the client.
-* Receive - This method handle the incoming messages in the client gui.
-* Write - This method handle the outgoing messages in the client gui.
-* Open_udp_sock - This method open a udp socket for the client in order to download a file.
-* Download_file - This method downloading a file got from the server.
-### Server
-#### Fields:
-* Nicknames_list
-* Files_list
-* Files_names
-* Data names
-* Host
-* Port tcp
-* Port udp
+## State Diagram of the Algorithm:
 
-#### Functions:
-* Start Chat - This method allows the clients to connect the chat
-and append them to the clients list.
-* Send Msg - This method broadcast the message of each client to the chat.
-* Send Msg To Someone - This method broadcast the message of a specific client to other client.
-* Send - This method handle the incoming messages.
-* Download File -This method sends the file to the client
-using the udp socket with realible principles (FAST reliable UDP).
 
-## Algorithms
+![צילום מסך 2022-03-01 180840](https://user-images.githubusercontent.com/92723105/156204947-b921c043-e93d-4668-8193-f41a590bcb6c.png)
+
+
+
+
 
 
 ## GUI
@@ -55,7 +47,7 @@ This classes generate a windows that show the chat(we use tkinter).
 Open the folder of the project and write this line in the terminal command:
 (The server and the client work on your local host and because of that you don't need to write your ip address).
 Any command you need you write in separate terminal.
-For this project you need in your computer: python, tkinter, tqdm.
+For this project you need in your computer: python, tkinter, tqdmTיק
 To install tkinter write this command in the terminal(for Ubuntu).
 * sudo apt-get install python3-tk
 
