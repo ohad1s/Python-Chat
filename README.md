@@ -1,8 +1,5 @@
 # Python-Chat
 
-![img.png](img.png)
-
-
 ## Written by Ohad Shirazi & Dvir Biton.
 
 
