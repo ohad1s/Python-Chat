@@ -49,11 +49,27 @@ To install tkinter run the following command:
 * sudo apt-get install python3-tk (linux)
 * pip install tk (windows)
 
+![צילום מסך 2022-03-01 184112](https://user-images.githubusercontent.com/92723105/156210965-6d85f63a-777d-450b-831b-983bfe128f59.png)
+
+
 To install tqdm run the following command:
 * sudo apt install python3-tqdm (linux)
 * pip install tqdm (windows)
 
-* python3 Server.py
-![img_1.png](img_1.png)
-* python3 Client.py
-![img_2.png](img_2.png)
+![צילום מסך 2022-03-01 184127](https://user-images.githubusercontent.com/92723105/156211142-727802b5-15bc-4d75-80d3-3d033c4474c2.png)
+
+After running the client the message below will pop:
+
+![צילום מסך 2022-03-01 184454](https://user-images.githubusercontent.com/92723105/156212038-6fdd547d-c2eb-4243-8d9c-b3d13749fd1b.png)
+
+Then after entering your nickname you can start chatting (it's very comfortable and user-friendly):
+
+![צילום מסך 2022-03-01 184559](https://user-images.githubusercontent.com/92723105/156212293-766dbcdc-1a67-41f7-af05-c431f4d148ad.png)
+
+File Downloading:
+
+![צילום מסך 2022-03-01 185124](https://user-images.githubusercontent.com/92723105/156212483-ae748316-8431-45b0-af22-b5936742eb12.png)
+
+
+
+
