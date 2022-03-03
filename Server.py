@@ -46,8 +46,8 @@ class Server:
         self.server_2.bind((host, port_udp))
         self.nicknames_list = []
         self.clients_list = []
-        self.files_list = ["files/air.jpeg", "files/cii.txt", "files/DO.txt", "files/try.txt", "files/amit-dvir.jpg"]
-        self.files_names = ["air", "Cii", "names", "try","amit-dvir"]
+        self.files_list = ["files/air.jpeg", "files/cii.txt", "files/DO.txt", "files/try.txt", "files/amit-dvir.jpg","files/fff.pdf", "files/art.docx"]
+        self.files_names = ["air", "Cii", "names", "try","amit-dvir", "fff", "art"]
         self.data_names = "files: " + ",".join(self.files_names)
         self.continue_download=True
 
